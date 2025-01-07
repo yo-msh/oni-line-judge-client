@@ -1,0 +1,30 @@
+---
+import ProblemCard from "./ProblemCard.astro";
+
+type Problem = {
+    id: number;
+    title: string;
+    description: string;
+};
+
+const problems: Problem[] = await fetch("http://localhost:5000/problems").then(
+    (res) => res.json(),
+);
+
+console.log(problems);
+---
+
+<article class="prose">
+    <h1>Problems</h1>
+    <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+        {
+            problems.map((problem) => (
+                <ProblemCard
+                    title={problem.title}
+                    description={problem.description}
+                    id={problem.id}
+                />
+            ))
+        }
+    </div>
+</article>

@@ -1,0 +1,9 @@
+<a id="login-btn" href="/login/" class="btn">Log In</a>
+
+<script>
+    const loginBtn = document.getElementById("login-btn") as HTMLAnchorElement;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        if (localStorage.getItem("token")) loginBtn.style.display = "none";
+    });
+</script>
