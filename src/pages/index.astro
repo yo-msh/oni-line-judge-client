@@ -5,29 +5,5 @@ import Layout from "@/layouts/Layout.astro";
 ---
 
 <Layout title="Home Page">
-	<div id="user-home" style="display: none;">
-		<UserHome />
-	</div>
-	<div id="home" style="display: none;">
-		<Home />
-	</div>
+	{Astro.cookies.has("token") ? <UserHome /> : <Home />}
 </Layout>
-
-<script>
-	window.addEventListener("DOMContentLoaded", () => {
-		const homeElement = document.getElementById("home");
-		const userHomeElement = document.getElementById("user-home");
-
-		if (localStorage.getItem("token")) {
-			if (homeElement && userHomeElement) {
-				homeElement.style.display = "none";
-				userHomeElement.style.display = "block";
-			}
-		} else {
-			if (homeElement && userHomeElement) {
-				homeElement.style.display = "block";
-				userHomeElement.style.display = "none";
-			}
-		}
-	});
-</script>
