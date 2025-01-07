@@ -1,0 +1,151 @@
+---
+interface Props {
+	id: number;
+	input: string;
+}
+
+import { API_ENDPOINTS } from "@/helpers/consts";
+const { id, input } = Astro.props;
+---
+
+<div
+	id="data"
+	hidden
+	data-id={id}
+	data-input={input}
+	data-execute-endpoint={API_ENDPOINTS.EXECUTE}
+	data-submit-endpoint={API_ENDPOINTS.SUBMIT}
+>
+</div>
+
+<div id="editor-window">
+	<div class="flex content-center justify-between pb-2">
+		<p class="pr-4">Language</p>
+		<select id="lang-select" class="w-1/2">
+			<option value="javascript" selected>JavaScript</option>
+			<option value="typescript">TypeScript</option>
+			<option value="python">Python</option>
+			<option value="java">Java</option>
+			<option value="c">C</option>
+			<option value="cpp">C++</option>
+		</select>
+		<button class="btn btn-primary" id="run-btn">Run</button>
+	</div>
+	<div id="editor" class="h-[60vh] w-[50vw]"></div>
+</div>
+<div id="output-window" class="h-auto w-[50vw] p-4">
+	<h1 class="py-2 text-xl">Output</h1>
+	<div class="mockup-code">
+		<pre
+			data-prefix="">
+                <code id="output">
+                </code>
+        </pre>
+	</div>
+</div>
+
+<script>
+	import * as monaco from "monaco-editor/esm/vs/editor/editor.api";
+
+	var selectedLang = "javascript";
+
+	const values: Object = {
+		javascript: "console.log('Hello world!');",
+		typescript: "console.log('Hello world!');",
+		python: "print('Hello world!')",
+		java: `public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello world!");
+    }
+}`,
+		c: `#include <stdio.h>
+
+int main() {
+    printf("Hello world!");
+    return 0;
+}`,
+		cpp: `#include <iostream>
+
+int main() {
+    std::cout << "Hello world!";
+    return 0;
+}`,
+	};
+
+	const langSelector = document.getElementById(
+		"lang-select",
+	) as HTMLSelectElement;
+
+	// Tell Monaco where to load its web workers
+	self.MonacoEnvironment = {
+		getWorkerUrl: function (_moduleId, label) {
+			if (label === "json") return "/json.worker.js";
+			if (label === "css" || label === "scss" || label === "less")
+				return "/css.worker.js";
+			if (label === "html" || label === "handlebars" || label === "razor")
+				return "/html.worker.js";
+			if (label === "typescript" || label === "javascript")
+				return "/ts.worker.js";
+			return "/editor.worker.js";
+		},
+	};
+
+	window.addEventListener("DOMContentLoaded", () => {
+		selectedLang = langSelector.value;
+
+		monaco.editor.create(document.getElementById("editor") as HTMLElement, {
+			value: values[selectedLang],
+			language: selectedLang,
+			automaticLayout: true,
+		});
+	});
+
+	langSelector.addEventListener("change", (e) => {
+		values[selectedLang] = monaco.editor.getModels()[0].getValue();
+
+		selectedLang = (e.target as HTMLSelectElement).value;
+
+		monaco.editor.getModels()[0].setValue(values[selectedLang]);
+
+		monaco.editor.setModelLanguage(
+			monaco.editor.getModels()[0],
+			selectedLang,
+		);
+	});
+
+	const dataElement = document.getElementById("data") as HTMLDivElement;
+	const id = dataElement.dataset.id;
+	const input = dataElement.dataset.input;
+	const executeEndpoint = dataElement.dataset.executeEndpoint;
+	const submitEndpoint = dataElement.dataset.submitEndpoint;
+
+	const outputElement = document.getElementById("output") as HTMLElement;
+
+	document.getElementById("run-btn")?.addEventListener("click", async () => {
+		const code = monaco.editor.getModels()[0].getValue();
+
+		try {
+			const response = await fetch(executeEndpoint as string, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					code: code,
+					input: input,
+					lang: selectedLang,
+				}),
+			});
+
+			if (response.status === 200) {
+				const data = await response.json();
+				outputElement.innerText = data.output;
+			} else {
+				outputElement.innerText = "Error";
+			}
+		} catch (error) {
+			console.error(error);
+			outputElement.innerText = error;
+		}
+	});
+</script>
