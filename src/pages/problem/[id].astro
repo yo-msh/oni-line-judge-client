@@ -9,28 +9,32 @@ type Problem = {
 	title: string;
 	description: string;
 	constraints: string;
-	sampleInput: string;
-	sampleOutput: string;
+	sample_input: string;
+	sample_output: string;
 };
 
 let problem: Problem;
 
 try {
-	const res = await fetch(API_ENDPOINTS.PROBLEM + id);
+	// const res = await fetch(`${API_ENDPOINTS.PROBLEM}/${id}`);
+	const res = await fetch(`http://localhost:5000/problems/${id}`);
 	problem = await res.json();
 } catch (error) {
-	// console.error(error);
-	// return Astro.redirect("/404");
+	console.error(error);
+	return Astro.redirect("/404");
 }
 
-// const { title, description, constraints, sampleInput, sampleOutput } = problem;
+console.log(problem);
+const { title, description, constraints, sample_input, sample_output } =
+	problem;
 
-const title = "Count Vowels in String";
-const description =
-	"Write a program to count the number of vowels in a string.";
-const constraints = "1 ≤ length of S ≤ 100";
-const sampleInput = "education";
-const sampleOutput = "5";
+// dummy data
+// const title = "Count Vowels in String";
+// const description =
+// 	"Write a program to count the number of vowels in a string.";
+// const constraints = "1 ≤ length of S ≤ 100";
+// const sample_input = "education";
+// const sample_output = "5";
 ---
 
 <Base title="Problem">
@@ -57,7 +61,8 @@ const sampleOutput = "5";
 			<div class="mockup-code">
 				<pre
 					data-prefix=""
-					class="text-warning"><code>{sampleInput}</code></pre>
+					class="text-warning"><code>{sample_input}</code>
+				</pre>
 			</div>
 
 			<br />
@@ -65,7 +70,7 @@ const sampleOutput = "5";
 			<div class="mockup-code">
 				<pre
 					data-prefix=""
-					class="text-success"><code>{sampleOutput}</code></pre>
+					class="text-success"><code>{sample_output}</code></pre>
 			</div>
 		</div>
 		<div id="right">
